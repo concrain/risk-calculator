@@ -1,4 +1,6 @@
 import java.util.Scanner;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 /**
  * Tool to calculate your risk/reward per trade
@@ -8,11 +10,13 @@ import java.util.Scanner;
  */
 public class Calculator {
     
+    private static String pairing = "";
     private static double equity = 0.0;
     private static double riskPercentage = 0.0;
     private static double entryPrice = 0.0;
     private static double exitPrice = 0.0;
     private static double totalRiskAmount = 0.0;
+    private static double stopPrice = 0.0;
     private static double distanceToStop = 0.0;
     private static double positionSize = 0.0;
     private static double riskVsReward = 0.0;
@@ -26,11 +30,16 @@ public class Calculator {
         Calculator cal = new Calculator();
         cal.runInputs();
         
+        SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+        Date date = new Date();
+        
+        System.out.println("\n  " + pairing +"  "+ f.format(date));
         System.out.println("\n  total equity at risk: \t\t" +Math.round(cal.calculateRisk(equity, riskPercentage) *100.0) /100.0);
-        System.out.println("  position size: \t\t\t" +Math.round(cal.calculatePositionSize(totalRiskAmount, distanceToStop) *100.0) /100.0);
+        System.out.println("  distance to stop: \t\t" +Math.round(cal.calculateDistanceToStop(entryPrice, stopPrice) *100.0) /100.0 + "%");
+        System.out.println("  position size: \t\t\t$" +Math.round(cal.calculatePositionSize(totalRiskAmount, distanceToStop) *100.0) /100.0);
         System.out.println("\n  max return rate: \t\t" +Math.round(cal.calculateMaxReturnRate(entryPrice, exitPrice) *100.0) /100.0 + "%");
         System.out.println("  max return equity: \t" +Math.round(cal.calculateMaxReturnEquity(totalGainPercentage, positionSize) *100.0) /100.0);
-        System.out.println("  reward/risk: \t\t\t" +Math.round(cal.calculateRiskReward(totalGainEquity, totalRiskAmount) *100.0) /100.0 + " / 1");
+        System.out.println("  reward/risk: \t\t\t" +Math.round(cal.calculateRiskReward(totalGainEquity, totalRiskAmount) *100.0) /100.0 + " / 1.0");
         System.out.println("  minimum win rate: \t\t" +Math.round(cal.calculateWinRate(riskVsReward) *100.0) /100.0 + "%");
         
         //System.out.printf("%n total equity at risk: %21f", cal.calculateRisk(equity, riskPercentage));
@@ -41,6 +50,9 @@ public class Calculator {
     
     private int runInputs() {
         Scanner obj = new Scanner(System.in);
+        
+        System.out.println("  trade pairing: ");
+        pairing = obj.nextLine();
         
         System.out.println(" total equity: ");
         equity = Double.parseDouble(obj.nextLine());
@@ -54,8 +66,8 @@ public class Calculator {
         System.out.println(" target exit price: ");
         exitPrice = Double.parseDouble(obj.nextLine());
         
-        System.out.println(" distance to stop .01-.99%: ");
-        distanceToStop = Double.parseDouble(obj.nextLine());
+        System.out.println(" target stop price: ");
+        stopPrice = Double.parseDouble(obj.nextLine());
         
         return 0;
     }
@@ -64,8 +76,14 @@ public class Calculator {
         return totalRiskAmount = equity * risk;
     }
     
+    private double calculateDistanceToStop(double entryPrice, double stopPrice) {
+        double delta = entryPrice - stopPrice;
+        return distanceToStop = (delta / entryPrice) *100;
+    }
+    
     private double calculatePositionSize(double totalRiskAmount, double distanceToStop) {
-        return positionSize = totalRiskAmount / distanceToStop;
+        // moves the decimal to the left 2 places
+        return positionSize = totalRiskAmount / (distanceToStop /= 100) ;
     }
     
     private double calculateMaxReturnRate(double entryPrice, double exitPrice) {
@@ -73,8 +91,7 @@ public class Calculator {
     }
     
     private double calculateMaxReturnEquity(double totalGainPercentage, double positionSize) {
-        // (totalGainPercentage /= 100) moves the decimal to the left 2 places
-        // https://stackoverflow.com/questions/4937402/moving-decimal-places-over-in-a-double
+        //moves the decimal to the left 2 places
         return totalGainEquity = positionSize * (totalGainPercentage /= 100);
     }
     
