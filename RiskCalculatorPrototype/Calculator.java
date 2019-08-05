@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.text.DecimalFormat;
 
 /**
  * Tool to calculate your risk/reward per trade
@@ -10,98 +11,131 @@ import java.text.SimpleDateFormat;
  */
 public class Calculator {
     
-    private static String pairing = "";
-    private static double equity = 0.0;
-    private static double riskPercentage = 0.0;
-    private static double entryPrice = 0.0;
-    private static double exitPrice = 0.0;
-    private static double totalEquityAtRisk = 0.0;
-    private static double stopPrice = 0.0;
-    private static double distanceToStop = 0.0;
-    private static double positionSizeShares = 0.0;
-    private static double positionSizeEquity = 0.0;
-    private static double riskVsReward = 0.0;
-    private static double winRate = 0.0;
-    private static double totalGainPercentage = 0.0;
-    private static double totalGainEquity = 0.0;
+    private String pairing = "";
+    private double equity = 0.0;
+    private double riskPercentage = 0.0;
+    private double entryPrice = 0.0;
+    private double exitPrice = 0.0;
+    private double totalEquityAtRisk = 0.0;
+    private double stopPrice = 0.0;
+    private double distanceToStop = 0.0;
+    private double positionSizeShares = 0.0;
+    private double positionSizeEquity = 0.0;
+    private double riskVsReward = 0.0;
+    private double winRate = 0.0;
+    private double totalGainPercentage = 0.0;
+    private double totalGainEquity = 0.0;
+    boolean asterix = false;
     
     public static void main(String[] args) {
-        System.out.println("configure your stop loss:\n");
+        System.out.println("configure your trading set up:\n");
             
         Calculator cal = new Calculator();
         cal.runInputs();
-        
-        SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
-        Date date = new Date();
-        
-        System.out.println("\n  " + pairing +"  "+ f.format(date));
-        System.out.println("\n  total risk: \t\t$" +Math.round(cal.calculateRisk(equity, riskPercentage) *100.0) /100.0);
-        System.out.println("  distance to stop: \t\t" +Math.round(cal.calculateDistanceToStop(entryPrice, stopPrice) *100.0) /100.0 + "%");
-        System.out.println("  total equity: \t\t$" +Math.round(cal.calculatePositionSizeTotalEquity(totalEquityAtRisk, entryPrice, stopPrice) *100.0) /100.0);
-        System.out.println("  total shares: \t\t" +Math.round(cal.calculatePositionSizeTotalShares(entryPrice, positionSizeEquity) *100.0) /100.0);
-        System.out.println("\n  max return rate: \t\t" +Math.round(cal.calculateMaxReturnRate(entryPrice, exitPrice) *100.0) /100.0 + "%");
-        System.out.println("  max return equity: \t" +Math.round(cal.calculateMaxReturnEquity(totalGainPercentage, positionSizeEquity) *100.0) /100.0);
-        System.out.println("  reward/risk: \t\t\t" +Math.round(cal.calculateRiskReward(totalGainEquity, totalEquityAtRisk) *100.0) /100.0 + " / 1.0");
-        System.out.println("  minimum win rate: \t\t" +Math.round(cal.calculateWinRate(riskVsReward) *100.0) /100.0 + "%");
+        cal.calculateResults(cal);
+        cal.displayResults();
     }
     
     private int runInputs() {
         Scanner obj = new Scanner(System.in);
         
         System.out.println("  trade pairing: ");
-        pairing = obj.nextLine();
+        this.pairing = obj.nextLine();
         
         System.out.println(" total equity: ");
-        equity = Double.parseDouble(obj.nextLine());
+        this.equity = Double.parseDouble(obj.nextLine());
         
         System.out.println(" risk percentage .01-.99%: ");
-        riskPercentage = Double.parseDouble(obj.nextLine());
+        this.riskPercentage = Double.parseDouble(obj.nextLine());
         
         System.out.println(" target entry price: ");
-        entryPrice = Double.parseDouble(obj.nextLine());
+        this.entryPrice = Double.parseDouble(obj.nextLine());
         
         System.out.println(" target exit price: ");
-        exitPrice = Double.parseDouble(obj.nextLine());
+        this.exitPrice = Double.parseDouble(obj.nextLine());
         
         System.out.println(" target stop price: ");
-        stopPrice = Double.parseDouble(obj.nextLine());
+        this.stopPrice = Double.parseDouble(obj.nextLine());
         
         return 0;
     }
     
-    private double calculateRisk(double equity, double risk) {
-        return totalEquityAtRisk = equity * risk;
+    private void calculateResults(Calculator cal) {
+        cal.calculateRisk(equity, riskPercentage);
+        cal.calculateDistanceToStop(entryPrice, stopPrice);
+        cal.calculatePositionSizeTotalEquity(totalEquityAtRisk, distanceToStop, equity, riskPercentage);
+        cal.calculatePositionSizeTotalShares(entryPrice, positionSizeEquity);
+        cal.calculateMaxReturnRate(entryPrice, exitPrice);
+        cal.calculateMaxReturnEquity(totalGainPercentage, positionSizeEquity);
+        cal.calculateRiskReward(totalGainEquity, totalEquityAtRisk);
+        cal.calculateWinRate(riskVsReward);
     }
     
-    private double calculateDistanceToStop(double entryPrice, double stopPrice) {
+    private void displayResults() {
+        DecimalFormat decimalFormatter = new DecimalFormat("##.##");
+        decimalFormatter.setMinimumFractionDigits(2);
+        decimalFormatter.setMaximumFractionDigits(2);
+       
+        SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+        Date date = new Date();
+        
+        System.out.println("\n  " + pairing +"  "+ f.format(date));
+        System.out.print("\n\n  total risk: \t\t$" +Math.round(totalEquityAtRisk *100.0) /100.0);
+        if(asterix)
+            System.out.print("*");
+        System.out.println("\n  distance to stop: \t\t" +Math.round(distanceToStop *100.0) /100.0 + "%");
+        System.out.println("  total equity: \t\t$" +Math.round(positionSizeEquity *100.0) /100.0);
+        System.out.println("  total shares: \t\t" +decimalFormatter.format(positionSizeShares));
+        System.out.println("\n  max return rate: \t\t" +Math.round(totalGainPercentage *100.0) /100.0 + "%");
+        System.out.println("  max return equity: \t$" +Math.round(totalGainEquity *100.0) /100.0);
+        System.out.println("  reward/risk: \t\t\t" +Math.round(riskVsReward *100.0) /100.0 + " / 1.0");
+        System.out.println("  minimum win rate: \t\t" +Math.round(winRate *100.0) /100.0 + "%");
+        
+        if(asterix)
+            System.out.println("\n\n * risk is lower than maximum requested");
+    }
+    
+    private void calculateRisk(double equity, double risk) {
+        this.totalEquityAtRisk = equity * risk;
+    }
+    
+    private void calculateDistanceToStop(double entryPrice, double stopPrice) {
         double delta = Math.abs(entryPrice - stopPrice);
-        return distanceToStop = (delta / entryPrice) *100;
+        this.distanceToStop = (delta / entryPrice) *100;
     }
     
-    private double calculatePositionSizeTotalEquity(double totalEquityAtRisk, double entryPrice, double stopPrice) {
-        double delta = Math.abs(entryPrice - stopPrice);
-        return positionSizeEquity = totalEquityAtRisk / delta;
-    }
-    
-    private double calculatePositionSizeTotalShares( double entryPrice, double positionSizeEquity) {
-        return positionSizeShares = positionSizeEquity / entryPrice;
-    }
-    
-    private double calculateMaxReturnRate(double entryPrice, double exitPrice) {
-        return totalGainPercentage = 100 * (exitPrice - entryPrice) / (double) entryPrice;
-    }
-    
-    private double calculateMaxReturnEquity(double totalGainPercentage, double positionSizeEquity) {
+    private void calculatePositionSizeTotalEquity(double totalEquityAtRisk, double distanceToStop, double equity, double riskPercentage) {
         //moves the decimal to the left 2 places
-        return totalGainEquity = positionSizeEquity * (totalGainPercentage /= 100);
+        distanceToStop = Math.round((distanceToStop /= 100) *100.0) /100.0; 
+        // if your stop% is less than the risk%
+        if(distanceToStop < riskPercentage) {
+            this.positionSizeEquity = equity;
+            this.totalEquityAtRisk = equity * distanceToStop;
+            this.asterix = true;
+        } else {
+            this.positionSizeEquity = totalEquityAtRisk / distanceToStop;
+        }
     }
     
-    private double calculateRiskReward(double totalGainEquity, double totalRiskAmount) {        
-        return riskVsReward = totalGainEquity / totalRiskAmount;
+    private void calculatePositionSizeTotalShares( double entryPrice, double positionSizeEquity) {
+        this.positionSizeShares = positionSizeEquity / entryPrice;
     }
     
-    private double calculateWinRate(double riskVsReward) {
-        return winRate = 1 / (1+riskVsReward) * 100;
+    private void calculateMaxReturnRate(double entryPrice, double exitPrice) {
+        this.totalGainPercentage = 100 * (exitPrice - entryPrice) / (double) entryPrice;
+    }
+    
+    private void calculateMaxReturnEquity(double totalGainPercentage, double positionSizeEquity) {
+        //moves the decimal to the left 2 places
+        this.totalGainEquity = positionSizeEquity * (totalGainPercentage /= 100);
+    }
+    
+    private void calculateRiskReward(double totalGainEquity, double totalRiskAmount) {        
+        this.riskVsReward = totalGainEquity / totalRiskAmount;
+    }
+    
+    private void calculateWinRate(double riskVsReward) {
+        this.winRate = 1 / (1+riskVsReward) * 100;
     }
     
 }
