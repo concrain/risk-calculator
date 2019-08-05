@@ -15,10 +15,11 @@ public class Calculator {
     private static double riskPercentage = 0.0;
     private static double entryPrice = 0.0;
     private static double exitPrice = 0.0;
-    private static double totalRiskAmount = 0.0;
+    private static double totalEquityAtRisk = 0.0;
     private static double stopPrice = 0.0;
     private static double distanceToStop = 0.0;
-    private static double positionSize = 0.0;
+    private static double positionSizeShares = 0.0;
+    private static double positionSizeEquity = 0.0;
     private static double riskVsReward = 0.0;
     private static double winRate = 0.0;
     private static double totalGainPercentage = 0.0;
@@ -34,18 +35,14 @@ public class Calculator {
         Date date = new Date();
         
         System.out.println("\n  " + pairing +"  "+ f.format(date));
-        System.out.println("\n  total equity at risk: \t\t" +Math.round(cal.calculateRisk(equity, riskPercentage) *100.0) /100.0);
+        System.out.println("\n  total risk: \t\t$" +Math.round(cal.calculateRisk(equity, riskPercentage) *100.0) /100.0);
         System.out.println("  distance to stop: \t\t" +Math.round(cal.calculateDistanceToStop(entryPrice, stopPrice) *100.0) /100.0 + "%");
-        System.out.println("  position size: \t\t\t$" +Math.round(cal.calculatePositionSize(totalRiskAmount, distanceToStop) *100.0) /100.0);
+        System.out.println("  total equity: \t\t$" +Math.round(cal.calculatePositionSizeTotalEquity(totalEquityAtRisk, entryPrice, stopPrice) *100.0) /100.0);
+        System.out.println("  total shares: \t\t" +Math.round(cal.calculatePositionSizeTotalShares(entryPrice, positionSizeEquity) *100.0) /100.0);
         System.out.println("\n  max return rate: \t\t" +Math.round(cal.calculateMaxReturnRate(entryPrice, exitPrice) *100.0) /100.0 + "%");
-        System.out.println("  max return equity: \t" +Math.round(cal.calculateMaxReturnEquity(totalGainPercentage, positionSize) *100.0) /100.0);
-        System.out.println("  reward/risk: \t\t\t" +Math.round(cal.calculateRiskReward(totalGainEquity, totalRiskAmount) *100.0) /100.0 + " / 1.0");
+        System.out.println("  max return equity: \t" +Math.round(cal.calculateMaxReturnEquity(totalGainPercentage, positionSizeEquity) *100.0) /100.0);
+        System.out.println("  reward/risk: \t\t\t" +Math.round(cal.calculateRiskReward(totalGainEquity, totalEquityAtRisk) *100.0) /100.0 + " / 1.0");
         System.out.println("  minimum win rate: \t\t" +Math.round(cal.calculateWinRate(riskVsReward) *100.0) /100.0 + "%");
-        
-        //System.out.printf("%n total equity at risk: %21f", cal.calculateRisk(equity, riskPercentage));
-        //System.out.printf("%n position size: %28f", cal.calculatePositionSize(totalRiskAmount, distanceToStop));
-        //System.out.printf("%n reward/risk: %30f", cal.calculateRiskReward(totalRiskAmount, exitPrice));
-        //System.out.printf("%n minimum win rate: %25f", cal.calculateWinRate(riskVsReward));
     }
     
     private int runInputs() {
@@ -73,26 +70,30 @@ public class Calculator {
     }
     
     private double calculateRisk(double equity, double risk) {
-        return totalRiskAmount = equity * risk;
+        return totalEquityAtRisk = equity * risk;
     }
     
     private double calculateDistanceToStop(double entryPrice, double stopPrice) {
-        double delta = entryPrice - stopPrice;
+        double delta = Math.abs(entryPrice - stopPrice);
         return distanceToStop = (delta / entryPrice) *100;
     }
     
-    private double calculatePositionSize(double totalRiskAmount, double distanceToStop) {
-        // moves the decimal to the left 2 places
-        return positionSize = totalRiskAmount / (distanceToStop /= 100) ;
+    private double calculatePositionSizeTotalEquity(double totalEquityAtRisk, double entryPrice, double stopPrice) {
+        double delta = Math.abs(entryPrice - stopPrice);
+        return positionSizeEquity = totalEquityAtRisk / delta;
+    }
+    
+    private double calculatePositionSizeTotalShares( double entryPrice, double positionSizeEquity) {
+        return positionSizeShares = positionSizeEquity / entryPrice;
     }
     
     private double calculateMaxReturnRate(double entryPrice, double exitPrice) {
         return totalGainPercentage = 100 * (exitPrice - entryPrice) / (double) entryPrice;
     }
     
-    private double calculateMaxReturnEquity(double totalGainPercentage, double positionSize) {
+    private double calculateMaxReturnEquity(double totalGainPercentage, double positionSizeEquity) {
         //moves the decimal to the left 2 places
-        return totalGainEquity = positionSize * (totalGainPercentage /= 100);
+        return totalGainEquity = positionSizeEquity * (totalGainPercentage /= 100);
     }
     
     private double calculateRiskReward(double totalGainEquity, double totalRiskAmount) {        
