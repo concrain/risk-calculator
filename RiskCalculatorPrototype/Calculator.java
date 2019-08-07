@@ -26,7 +26,7 @@ public class Calculator {
     private double totalGainPercentage = 0.0;
     private double totalGainEquity = 0.0;
     boolean asterix = false;
-    
+   
     public static void main(String[] args) {
         System.out.println("configure your trading set up:\n");
             
@@ -75,12 +75,12 @@ public class Calculator {
         DecimalFormat decimalFormatter = new DecimalFormat("##.##");
         decimalFormatter.setMinimumFractionDigits(2);
         decimalFormatter.setMaximumFractionDigits(2);
-       
+    
         SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
         Date date = new Date();
         
         System.out.println("\n  " + pairing +"  "+ f.format(date));
-        System.out.print("\n\n  total risk: \t\t$" +Math.round(totalEquityAtRisk *100.0) /100.0);
+        System.out.print("\n  total risk: \t\t$" +Math.round(totalEquityAtRisk *100.0) /100.0);
         if(asterix)
             System.out.print("*");
         System.out.println("\n  distance to stop: \t\t" +Math.round(distanceToStop *100.0) /100.0 + "%");
@@ -104,10 +104,9 @@ public class Calculator {
         this.distanceToStop = (delta / entryPrice) *100;
     }
     
-    private void calculatePositionSizeTotalEquity(double totalEquityAtRisk, double distanceToStop, double equity, double riskPercentage) {
+    private void calculatePositionSizeTotalEquity(double totalEquityAtRisk, double distanceToStop, double equity, double riskPercentage) {    
         //moves the decimal to the left 2 places
-        distanceToStop = Math.round((distanceToStop /= 100) *100.0) /100.0; 
-        // if your stop% is less than the risk%
+        distanceToStop = (distanceToStop /= 100);
         if(distanceToStop < riskPercentage) {
             this.positionSizeEquity = equity;
             this.totalEquityAtRisk = equity * distanceToStop;
